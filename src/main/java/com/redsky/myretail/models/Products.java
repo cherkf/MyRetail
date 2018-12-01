@@ -22,7 +22,8 @@ public class Products {
 
     }
 
-    public Products(long id, String name, BasicDBObject current_price) {
+    public Products(ObjectId _id, long id, String name, BasicDBObject current_price) {
+        this._id = _id;
         this.id = id;
         this.current_price = current_price;
         this.name = name;
