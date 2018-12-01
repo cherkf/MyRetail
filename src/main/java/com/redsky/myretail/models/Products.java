@@ -12,6 +12,7 @@ public class Products {
     @Id
     public ObjectId _id;
 
+
     public long id;
     public String name;
     public BasicDBObject current_price;

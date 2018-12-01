@@ -25,6 +25,8 @@ repositories {
 
 
 dependencies {
+	compile group: 'org.json', name: 'json', version: '20090211'
+	compile group: 'commons-io', name: 'commons-io', version: '2.6'
 	implementation('org.springframework.boot:spring-boot-starter-data-mongodb')
 	implementation('org.springframework.boot:spring-boot-starter-web')
 	testImplementation('org.springframework.boot:spring-boot-starter-test')
