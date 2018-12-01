@@ -7,7 +7,11 @@ import org.bson.types.ObjectId;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.io.BufferedReader;
@@ -56,8 +60,10 @@ public class ProductsController {
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
-    public void modifyProductById(@PathVariable("id") long id, @Valid @RequestBody Products Products) {
-        Products.setId(id);
+    public void updateProductById(@PathVariable("id") long id, @Valid @RequestBody Products Products) {
+        Products current = repository.findById(id);
+        ObjectId _id = new ObjectId(current.get_id());
+        Products.set_id(_id);
         repository.save(Products);
     }
 
