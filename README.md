@@ -11,13 +11,22 @@ This is a simple RestFul application using Spring boot and MongoDB.
 
 - An accessible MongoDB instance. For more information on how to install MongoDB refer to [MongoDB]
 
-The instance will have the following db:
+The instance will have the following:
+
+The database used is my_retail:
 
 ```sh
 use my_retail;
+```
 
+The collection used is products:
+
+```sh
 db.createCollection("products");
+```
 
+Below is a sample of the data inserted in the collection for this application:
+```sh
 db.products.insertMany([
   { "id" : 13860428, 
      "current_price" : { 
