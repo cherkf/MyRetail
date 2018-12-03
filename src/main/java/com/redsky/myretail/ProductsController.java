@@ -1,5 +1,6 @@
 package com.redsky.myretail;
 
+import com.redsky.myretail.exceptions.ProductNotFoundException;
 import com.redsky.myretail.models.Products;
 import com.redsky.myretail.repositories.ProductsRepository;
 import org.apache.commons.io.IOUtils;
@@ -14,10 +15,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -37,31 +35,59 @@ public class ProductsController {
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-    public Products getProductById(@PathVariable("id") long id) {
-        String urlString = "https://redsky.target.com/v2/pdp/tcin/"+ Long.toString(id)+
-                "?excludes=taxonomy,price,promotion,bulk_ship,rating_and_review_reviews,rating_and_review_statistics,"+
-                "question_answer_statistics";
+    public Products getProductById(@PathVariable("id") String id) {
+
+        long _id;
+        try {
+            _id = Long.parseLong(id);
+        }
+        catch (NumberFormatException e) {
+            throw new ProductNotFoundException("Product " + id + " not found");
+        }
+
+        String name = getProductName(id);
+
+        Products result = repository.findById(_id);
+        if (result == null || name == null || name.isEmpty()) {
+            throw new ProductNotFoundException("Product " + id + " not found");
+        }
+        result.setName(name);
+        return result;
+
+    }
+
+    private String getProductName(@PathVariable("id") String id) {
+        String urlString = "https://redsky.target.com/v2/pdp/tcin/" + id +
+                    "?excludes=taxonomy,price,promotion,bulk_ship,rating_and_review_reviews,rating_and_review_statistics," +
+                    "question_answer_statistics";
         System.out.println("URL is: " + urlString);
         String name = null;
         try {
             //TODO Use HTTPCLIENT to handle redirects
-            JSONObject json = new JSONObject(IOUtils.toString(new URL(urlString), Charset.forName("UTF-8")).trim());
-            JSONObject product = json.getJSONObject("product");
-            JSONObject item = product.getJSONObject("item");
-            JSONObject product_description = item.getJSONObject("product_description");
-            name = product_description.getString("title");
-            System.out.println("name is: " + name);
+            //HttpClient instance = HttpClientBuilder.create()
+            //.setRedirectStrategy(new LaxRedirectStrategy()).build();
+            String content = IOUtils.toString(new URL(urlString), Charset.forName("UTF-8")).trim();
+            if (content.length() > 0) {
+                JSONObject json = new JSONObject(content);
+                JSONObject product = json.getJSONObject("product");
+                JSONObject item = product.getJSONObject("item");
+                JSONObject product_description = item.getJSONObject("product_description");
+                name = product_description.getString("title");
+                System.out.println("name is: " + name);
+            }
+
         } catch (JSONException | IOException e) {
             e.printStackTrace();
         }
-        Products result = repository.findById(id);
-        result.setName(name);
-        return result;
+        return name;
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
     public void updateProductById(@PathVariable("id") long id, @Valid @RequestBody Products Products) {
         Products current = repository.findById(id);
+        if (current == null ) {
+            throw new ProductNotFoundException("Product " + Long.toString(id) + " not found");
+        }
         ObjectId _id = new ObjectId(current.get_id());
         Products.set_id(_id);
         repository.save(Products);
@@ -79,25 +105,5 @@ public class ProductsController {
         repository.delete(repository.findById(id));
     }
 
-    private static String getContentFromUrl(String urlToRead) {
-        StringBuilder result = new StringBuilder();
-        URL url = null;
-        try {
-            url = new URL(urlToRead);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            String line;
-            while ((line = rd.readLine()) != null) {
-                System.out.print("Line here: " + line);
-                result.append(line);
-            }
-            rd.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return result.toString();
-    }
 }
 
