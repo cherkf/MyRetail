@@ -40,6 +40,14 @@ db.products.insertMany([
 ]);
 
 ```
+Update the applications.properties file with the MongoDB instance used:
+
+spring.data.mongodb.host=[host]
+spring.data.mongodb.port=[port]
+spring.data.mongodb.authentication-database=[authentication_database]
+spring.data.mongodb.username=[username]
+spring.data.mongodb.password=[password]
+spring.data.mongodb.database=products
 
 ## Running the app:
 
@@ -48,6 +56,13 @@ To run the application:
 ```sh
 
 gradle bootRun
+
+```
+
+To run the tests:
+
+```sh
+gradle test
 
 ```
 
